@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Common.Interfaces;
 
-public interface IApplicationDbContext
+public interface IUsersDbReadOnlyContext
 {
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 

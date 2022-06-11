@@ -23,7 +23,7 @@ public class RegisterUserCommandHandler : IHandlerWrapper<RegisterUserCommand,Un
         
     public async Task<IResponse<Unit>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var user = new User(request.RegisterUserRequest.Email);
+        var user = new User() { Email= request.RegisterUserRequest.Email };
         var createResult = await _userManager.CreateAsync(user, request.RegisterUserRequest.Password);
         _forbid.False(createResult.Succeeded, RegisterException.Instance);
         return Response.Success(Unit.Value);

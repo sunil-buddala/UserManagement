@@ -4,14 +4,13 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Application.Common.SwaggerSchemaFilters.Auth;
 
-public class LoginUserDtoSchemaFilter : ISchemaFilter
+public class GoogleLoginUserDtoSchemaFilter : ISchemaFilter
 {
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
         schema.Example = new OpenApiObject
         {
-            ["Email"] = new OpenApiString("test@test.ge"),
-            ["Password"] = new OpenApiString("yourstringpassword")
+            ["ExternalAccessToken"] = new OpenApiString("fdsk3sdfdfp3dgf")
         };
     }
 }
