@@ -13,17 +13,17 @@ namespace Application.Commands.Auth;
 
 public record RegisterUserCommand(RegisterUserRequest RegisterUserRequest) : IRequestWrapper<Unit>;
 
-public class RegisterUserCommandHandler : IHandlerWrapper<RegisterUserCommand,Unit>
+public class RegisterUserCommandHandler : IHandlerWrapper<RegisterUserCommand, Unit>
 {
     private readonly UserManager<User> _userManager;
     private readonly IForbid _forbid;
 
     public RegisterUserCommandHandler(UserManager<User> userManager, IForbid forbid) =>
         (_userManager, _forbid) = (userManager, forbid);
-        
+
     public async Task<IResponse<Unit>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var user = new User() { Email= request.RegisterUserRequest.Email };
+        var user = new User() { Email = request.RegisterUserRequest.Email, UserName = request.RegisterUserRequest.Email };
         var createResult = await _userManager.CreateAsync(user, request.RegisterUserRequest.Password);
         _forbid.False(createResult.Succeeded, RegisterException.Instance);
         return Response.Success(Unit.Value);

@@ -21,6 +21,7 @@ public class GoogleLoginCommandHandler : IHandlerWrapper<GoogleLoginCommand, Aut
     private readonly JwtSettings jwtSettings;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
+    private const string GoogleProviderKey = "Google";
 
     public GoogleLoginCommandHandler(UserManager<User> userManager, SignInManager<User> signInManager,
         IAuthenticateService authenticateService, IForbid forbid, JwtSettings jwtSettings)
@@ -40,15 +41,17 @@ public class GoogleLoginCommandHandler : IHandlerWrapper<GoogleLoginCommand, Aut
                    Audience = new[] { jwtSettings.Google.ClientId }
                });
 
-        var user = await _userManager.FindByLoginAsync("Google", payload.Subject);
+        var user = await _userManager.FindByLoginAsync(GoogleProviderKey, payload.Subject);
         if (user == null)
         {
             user = new User()
             {
-                Email = payload.Email
+                Email = payload.Email,
+                UserName = payload.Email
             };
 
             await _userManager.CreateAsync(user);
+            await _userManager.AddLoginAsync(user, new UserLoginInfo(GoogleProviderKey, payload.Subject, GoogleProviderKey.ToUpperInvariant()));
         }
 
         await _signInManager.SignInAsync(user, false);
