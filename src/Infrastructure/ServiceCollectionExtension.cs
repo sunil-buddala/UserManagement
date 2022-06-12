@@ -49,7 +49,7 @@ public static class ServiceCollectionExtension
                 options.Password.RequireDigit = false;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
-                options.User.RequireUniqueEmail = true;
+                options.User.RequireUniqueEmail = false;
             })
             .AddEntityFrameworkStores<UsersDbReadOnlyContext>()
             .AddEntityFrameworkStores<UsersDbWriteContext>()
