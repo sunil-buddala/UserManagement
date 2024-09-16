@@ -23,20 +23,23 @@ public static class ServiceCollectionExtension
     public static void AddInfrastructure(this IServiceCollection services,IConfiguration configuration)
     {
         if (Convert.ToBoolean(configuration.GetValue<bool>("UseInMemoryDatabase")))
-            services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+        {
+            services.AddDbContext<UsersDbReadOnlyContext>(options => options.UseInMemoryDatabase("TestDb"));
+            services.AddDbContext<UsersDbWriteContext>(options => options.UseInMemoryDatabase("TestDb"));
+        }
         else
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<UsersDbReadOnlyContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-                    builder =>
-                    {
-                        builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
-                        //EF allows you to specify that a given LINQ query should be split into multiple SQL queries.
-                        //Instead of JOINs, split queries generate an additional SQL query for each included collection navigation
-                        //More about that: https://docs.microsoft.com/en-us/ef/core/querying/single-split-queries
-                        builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    });
+                var connectionString = configuration.GetConnectionString("UsersDbReadOnlyConnection");
+                options.UseMySql(connectionString,
+                    ServerVersion.AutoDetect(connectionString));
+            });
+            services.AddDbContext<UsersDbWriteContext>(options =>
+            {
+                var connectionString = configuration.GetConnectionString("UsersDbWriteConnection");
+                options.UseMySql(connectionString,
+                    ServerVersion.AutoDetect(connectionString));
             });
         }
 
@@ -46,12 +49,14 @@ public static class ServiceCollectionExtension
                 options.Password.RequireDigit = false;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
-                options.User.RequireUniqueEmail = true;
+                options.User.RequireUniqueEmail = false;
             })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddEntityFrameworkStores<UsersDbReadOnlyContext>()
+            .AddEntityFrameworkStores<UsersDbWriteContext>()
             .AddDefaultTokenProviders();
 
-        services.AddScoped<IApplicationDbContext>(x => x.GetService<ApplicationDbContext>()!);
+        services.AddScoped<IUsersDbReadOnlyContext>(x => x.GetService<UsersDbReadOnlyContext>()!);
+        services.AddScoped<IUsersDbWriteContext>(x => x.GetService<UsersDbWriteContext>()!);
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();

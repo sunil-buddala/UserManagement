@@ -21,15 +21,20 @@ public class LogOutCommandHandler : IHandlerWrapper<LogOutCommand,Unit>
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly SignInManager<User> _signInManager;
-    private readonly IApplicationDbContext _context;
+    private readonly IUsersDbReadOnlyContext _readOnlyContext;
+    private readonly IUsersDbWriteContext writeContext;
     private readonly IForbid _forbid;
 
-    public LogOutCommandHandler(IHttpContextAccessor httpContextAccessor,SignInManager<User> signInManager,
-        IApplicationDbContext context,IForbid forbid)
+    public LogOutCommandHandler(IHttpContextAccessor httpContextAccessor,
+        SignInManager<User> signInManager,
+        IUsersDbReadOnlyContext readOnlyContext,
+        IUsersDbWriteContext writeContext,
+        IForbid forbid)
     {
         _httpContextAccessor = httpContextAccessor;
         _signInManager = signInManager;
-        _context = context;
+        _readOnlyContext = readOnlyContext;
+        this.writeContext = writeContext;
         _forbid = forbid;
     }
 
@@ -38,11 +43,11 @@ public class LogOutCommandHandler : IHandlerWrapper<LogOutCommand,Unit>
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue("id");
         _forbid.NullOrEmpty(userId, UserNotFoundException.Instance);
         await _signInManager.SignOutAsync();
-        var refreshTokens = await _context.RefreshTokens
+        var refreshTokens = await _readOnlyContext.RefreshTokens
             .Where(x => x.UserId == userId)
             .ToListAsync(cancellationToken);
-        _context.RefreshTokens.RemoveRange(refreshTokens);
-        await _context.SaveChangesAsync(cancellationToken);
+        writeContext.RefreshTokens.RemoveRange(refreshTokens);
+        await writeContext.SaveChangesAsync(cancellationToken);
         return Response.Success(Unit.Value);
     }
 }

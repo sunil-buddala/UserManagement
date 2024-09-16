@@ -19,9 +19,19 @@ public class AccessTokenService : IAccessTokenService
         List<Claim> claims = new()
         {
             new Claim("id", user.Id),
-            new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.UserName),
         };
+
+        if(!string.IsNullOrEmpty(user.Email))
+        {
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+        }
+
+        if (!string.IsNullOrEmpty(user.PhoneNumber))
+        {
+            claims.Add(new Claim("PhoneNumber", user.PhoneNumber));
+        }
+
         return _tokenGenerator.Generate(_jwtSettings.AccessTokenSecret, _jwtSettings.Issuer, _jwtSettings.Audience,
             _jwtSettings.AccessTokenExpirationMinutes, claims);
     }

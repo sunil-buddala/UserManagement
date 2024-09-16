@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,19 +31,19 @@ public static class Program
             Log.Information("Application Starting...");
             var host = CreateHostBuilder(args).Build();
             using var scope = host.Services.CreateScope();
-            var serviceProvider = scope.ServiceProvider;
-            try
-            {
-                var context = serviceProvider.GetService<ApplicationDbContext>();
-                if (context!.Database.IsSqlServer())
-                    await context.Database.MigrateAsync();
-                // Seed database here
-            }
-            catch (Exception e)
-            {
-                Log.Fatal(e,"An error occurred while migrating the database.");
-                throw;
-            }
+            //var serviceProvider = scope.ServiceProvider;
+            //try
+            //{
+            //    var context = serviceProvider.GetService<ApplicationDbContext>();
+            //    if (context!.Database.IsSqlServer())
+            //        await context.Database.MigrateAsync();
+            //    // Seed database here
+            //}
+            //catch (Exception e)
+            //{
+            //    Log.Fatal(e,"An error occurred while migrating the database.");
+            //    throw;
+            //}
 
             await host.RunAsync();
         }

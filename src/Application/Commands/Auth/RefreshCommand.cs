@@ -19,14 +19,20 @@ public class RefreshCommandHandler : IHandlerWrapper<RefreshCommand,Authenticate
     private readonly IAuthenticateService _authenticateService;
     private readonly IForbid _forbid;
     private readonly IRefreshTokenValidator _refreshTokenValidator;
-    private readonly IApplicationDbContext _context;
+    private readonly IUsersDbReadOnlyContext readOnlyContext;
+    private readonly IUsersDbWriteContext writeContext;
     private readonly UserManager<User> _userManager;
 
-    public RefreshCommandHandler(IRefreshTokenValidator refreshTokenValidator, IApplicationDbContext context,
-        UserManager<User> userManager,IAuthenticateService authenticateService,IForbid forbid)
+    public RefreshCommandHandler(IRefreshTokenValidator refreshTokenValidator,
+        IUsersDbReadOnlyContext readOnlyContext,
+        IUsersDbWriteContext writeContext,
+        UserManager<User> userManager,
+        IAuthenticateService authenticateService,
+        IForbid forbid)
     {
         _refreshTokenValidator = refreshTokenValidator;
-        _context = context;
+        this.readOnlyContext = readOnlyContext;
+        this.writeContext = writeContext;
         _userManager = userManager;
         _authenticateService = authenticateService;
         _forbid = forbid;
@@ -38,11 +44,11 @@ public class RefreshCommandHandler : IHandlerWrapper<RefreshCommand,Authenticate
         var isValidRefreshToken = _refreshTokenValidator.Validate(refreshRequest.RefreshToken);
         _forbid.False(isValidRefreshToken, InvalidRefreshTokenException.Instance);
         var refreshToken =
-            await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == refreshRequest.RefreshToken,
+            await readOnlyContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == refreshRequest.RefreshToken,
                 cancellationToken);
         _forbid.Null(refreshToken, InvalidRefreshTokenException.Instance);
-        _context.RefreshTokens.Remove(refreshToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        writeContext.RefreshTokens.Remove(refreshToken);
+        await writeContext.SaveChangesAsync(cancellationToken);
             
         var user = await _userManager.FindByIdAsync(refreshToken.UserId);
         _forbid.Null(user, UserNotFoundException.Instance);

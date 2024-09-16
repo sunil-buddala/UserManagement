@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<User>,IApplicationDbContext
+public class UsersDbWriteContext : IdentityDbContext<User>, IUsersDbWriteContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+    public UsersDbWriteContext(DbContextOptions<UsersDbWriteContext> options) : base(options) { }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new ())
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
         foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {

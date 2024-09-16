@@ -10,8 +10,10 @@ public class AuthenticateService : IAuthenticateService
 {
     private readonly IAccessTokenService _accessTokenService;
     private readonly IRefreshTokenService _refreshTokenService;
-    private readonly IApplicationDbContext _context;
-    public AuthenticateService(IAccessTokenService accessTokenService, IRefreshTokenService refreshTokenService, IApplicationDbContext context)
+    private readonly IUsersDbWriteContext _context;
+    public AuthenticateService(IAccessTokenService accessTokenService,
+        IRefreshTokenService refreshTokenService,
+        IUsersDbWriteContext context)
     {
         _accessTokenService = accessTokenService;
         _refreshTokenService = refreshTokenService;
